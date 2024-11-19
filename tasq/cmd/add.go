@@ -5,9 +5,10 @@ package cmd
 
 import (
 	"errors"
-	"os"
-
-	"tasq/pkg/add"
+	"tasq/internal/entity"
+	"tasq/internal/storage"
+	"tasq/internal/task"
+	"time"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -39,31 +40,25 @@ func init() {
 }
 
 func runAdd(opts addOptions) error {
-	task := add.Item{
+	_ = opts
+	storageEngine, _ := storage.SelectEngine(storage.File)
+	err := storageEngine.Save(entity.Task{
 		Name:        opts.name,
 		Description: opts.description,
 		Status:      opts.status,
+		UpdatedAt:   time.Now(),
+		CreatedAt:   time.Now(),
+	})
+	if err != nil {
+		return err
 	}
+	task.NewTaskManager(storageEngine)
 
-	taskService := add.NewTaskService(os.Stdout)
-	return taskService.Add(task)
+	return nil
 }
 
 func promptAddTask(opts *addOptions) error {
 	opts.status = "New"
-
-	promptInput := func(label string) (string, error) {
-		prompt := promptui.Prompt{
-			Label: label,
-			Validate: func(input string) error {
-				if len(input) == 0 {
-					return errors.New("input cannot be empty")
-				}
-				return nil
-			},
-		}
-		return prompt.Run()
-	}
 
 	name, err := promptInput("Task Name")
 	if err != nil {
@@ -78,4 +73,17 @@ func promptAddTask(opts *addOptions) error {
 	opts.description = description
 
 	return nil
+}
+
+func promptInput(label string) (string, error) {
+	prompt := promptui.Prompt{
+		Label: label,
+		Validate: func(input string) error {
+			if len(input) == 0 {
+				return errors.New("input cannot be empty")
+			}
+			return nil
+		},
+	}
+	return prompt.Run()
 }
