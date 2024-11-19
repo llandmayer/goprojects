@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"tasq/internal/storage"
+	"tasq/internal/task"
 
 	"github.com/spf13/cobra"
 )
@@ -25,12 +26,18 @@ func init() {
 }
 
 func runList() error {
-	storageEngine, _ := storage.SelectEngine(storage.File)
-	task, err := storageEngine.Load()
+	storageEngine, err := storage.SelectEngine(storage.File)
 	if err != nil {
-		return err
+		return fmt.Errorf("error selecting storage engine: %w", err)
 	}
-	for _, t := range task {
+
+	taskManager := task.NewTaskManager(storageEngine)
+	tasks, err := taskManager.ListTasks()
+	if err != nil {
+		return fmt.Errorf("failed to list tasks: %w", err)
+	}
+
+	for _, t := range tasks {
 		fmt.Println(t)
 	}
 

@@ -7,6 +7,7 @@ import (
 
 type TaskManager interface {
 	AddTask(t entity.Task) error
+	ListTasks() ([]entity.Task, error)
 }
 
 type taskManagerImpl struct {
@@ -18,5 +19,9 @@ func NewTaskManager(s storage.Storage) TaskManager {
 }
 
 func (tm taskManagerImpl) AddTask(t entity.Task) error {
-	return nil
+	return tm.storage.Save(t)
+}
+
+func (tm taskManagerImpl) ListTasks() ([]entity.Task, error) {
+	return tm.storage.Load()
 }

@@ -5,12 +5,13 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"tasq/internal/entity"
 	"tasq/internal/storage"
 	"tasq/internal/task"
+	"tasq/internal/ui"
 	"time"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -40,19 +41,21 @@ func init() {
 }
 
 func runAdd(opts addOptions) error {
-	_ = opts
-	storageEngine, _ := storage.SelectEngine(storage.File)
-	err := storageEngine.Save(entity.Task{
+	storageEngine, err := storage.SelectEngine(storage.File)
+	if err != nil {
+		return fmt.Errorf("error selecting storage engine: %w", err)
+	}
+
+	taskManager := task.NewTaskManager(storageEngine)
+	if err := taskManager.AddTask(entity.Task{
 		Name:        opts.name,
 		Description: opts.description,
 		Status:      opts.status,
 		UpdatedAt:   time.Now(),
 		CreatedAt:   time.Now(),
-	})
-	if err != nil {
-		return err
+	}); err != nil {
+		return fmt.Errorf("failed to add task: %w", err)
 	}
-	task.NewTaskManager(storageEngine)
 
 	return nil
 }
@@ -60,30 +63,17 @@ func runAdd(opts addOptions) error {
 func promptAddTask(opts *addOptions) error {
 	opts.status = "New"
 
-	name, err := promptInput("Task Name")
+	name, err := ui.PromptInput("Task Name")
 	if err != nil {
 		return errors.New("failed to get task name")
 	}
 	opts.name = name
 
-	description, err := promptInput("Task Description")
+	description, err := ui.PromptInput("Task Description")
 	if err != nil {
 		return errors.New("failed to get task description")
 	}
 	opts.description = description
 
 	return nil
-}
-
-func promptInput(label string) (string, error) {
-	prompt := promptui.Prompt{
-		Label: label,
-		Validate: func(input string) error {
-			if len(input) == 0 {
-				return errors.New("input cannot be empty")
-			}
-			return nil
-		},
-	}
-	return prompt.Run()
 }

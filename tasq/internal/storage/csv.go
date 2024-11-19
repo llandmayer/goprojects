@@ -49,18 +49,6 @@ func (s *csvStorage) openFile() (*os.File, error) {
 	return file, nil
 }
 
-// func (s *csvStorage) validate(f *csv.Reader) error {
-// 	file, err := s.openFile()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	_, ok, err := csvlint.Validate(file, '\t', false)
-// 	if !ok {
-// 		return err
-// 	}
-// 	return nil
-// }
-
 func (s *csvStorage) readHeaders(reader *csv.Reader) (map[string]int, error) {
 	headers, err := reader.Read()
 	if err != nil {
