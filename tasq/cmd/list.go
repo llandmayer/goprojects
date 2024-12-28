@@ -36,6 +36,7 @@ func runList() error {
 	if err != nil {
 		return fmt.Errorf("failed to list tasks: %w", err)
 	}
+	// ui.Test()
 
 	for _, t := range tasks {
 		fmt.Println(t)
