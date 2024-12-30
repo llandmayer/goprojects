@@ -8,8 +8,8 @@ import (
 type Layout interface {
 	Header(width int) string
 	Sidebar(width, height, activeIndex int, menuItems []string) string
-	Content(width, height, activeIndex int, menuItems []string) string
-	Footer(width, height int, mode string, txt textinput.Model, suggestions []string) string
+	Content(width, height, activeIndex int, content string) string
+	Footer(width, height int, mode string, txt textinput.Model) string
 }
 
 type Skeleton interface {

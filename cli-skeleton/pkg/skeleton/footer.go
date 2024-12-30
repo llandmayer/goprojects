@@ -1,6 +1,8 @@
 package skeleton
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -10,9 +12,9 @@ var FooterStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("230")).
 	Padding(0, 1)
 
-func DefaultFooter(width, height int, mode string, txt textinput.Model, suggestions []string) string {
+func DefaultFooter(width, height int, mode string, txt textinput.Model) string {
 	return FooterStyle.
 		Width(width).
 		Height(height).
-		Render("Use ↑/↓ to navigate, ':' to enter command mode, 'q' to quit")
+		Render(fmt.Sprintf("Use ↑/↓ to navigate, ':' to enter command mode, 'q' to quit, current mode: %s", mode))
 }

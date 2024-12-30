@@ -29,20 +29,63 @@ class DefaultLayout {
 %% Model implements Skeleton
 class Model {
   - Layout Layout
+  - AppState AppState
   - Width int
   - Height int
   - MenuItems []string
   - ActiveIndex int
   - Mode string
   - TextInput textinput.Model
-  + NewModel(layout Layout, menu []string) *Model
+  - ActivePlugin Plugin
+  + NewModel(state AppState, layout Layout, menu []string) *Model
   + Init() tea.Cmd
   + Update(msg tea.Msg) returns (tea.Model, tea.Cmd)
   + View() string
 }
 
+%% AppState and Mode
+class AppState {
+  - stack List~Mode~
+  + Current() Mode
+  + Push(m Mode)
+  + Pop()
+}
+
+class Mode {
+  <<enumeration>>
+  + MenuMode
+  + ContentMode
+}
+
+%% Plugins and Registry
+class Plugin {
+  <<interface>>
+  + Name() string
+  + Init() tea.Cmd
+  + Update(msg tea.Msg) returns (Plugin, tea.Cmd)
+  + View(width, height int) string
+}
+
+class Registry {
+  + Registry : Map~string, Plugin~
+}
+
+%% Example Plugin: Terragrunt
+class TerragruntPlugin {
+  - counter int
+  + Name() string
+  + Init() tea.Cmd
+  + Update(msg tea.Msg) returns (Plugin, tea.Cmd)
+  + View(width, height int) string
+}
+
 Skeleton <|.. Model : implements
 Layout <|.. DefaultLayout : implements
+Model --> AppState : uses
+Model --> Plugin : activePlugin
+AppState --> Mode : manages stack of
+Registry --> Plugin : map of plugins
+TerragruntPlugin ..|> Plugin : implements
 
 %% Layout delegates to these "default" functions internally
 class Header {
@@ -67,7 +110,7 @@ DefaultLayout ..> Sidebar : calls DefaultSidebar
 DefaultLayout ..> Content : calls DefaultContent
 :::
 
-# Sequence Diagram
+# Main App
 
 ::: mermaid
 sequenceDiagram
@@ -101,3 +144,46 @@ sequenceDiagram
     Model-->>BubbleTea: Rendered Output
     BubbleTea->>User: Updated CLI View
 :::
+
+
+# Plugins
+::: mermaid
+sequenceDiagram
+    participant User
+    participant BubbleTea as Bubble Tea Framework
+    participant Model
+    participant PluginRegistry
+    participant Plugin as ActivePlugin
+    participant Layout as DefaultLayout
+    participant Header
+    participant Sidebar
+    participant Content
+    participant Footer
+
+    User->>BubbleTea: Terminal Input (e.g., select plugin)
+    BubbleTea->>Model: Sends input (e.g., "Enter")
+    Model->>PluginRegistry: Fetch plugin by name
+    PluginRegistry-->>Model: Return Plugin instance
+    Model->>Plugin: Init() the selected plugin
+    Plugin-->>Model: Initialized
+
+    User->>BubbleTea: Further Input (e.g., plugin-specific action)
+    BubbleTea->>Model: Sends input to active plugin
+    Model->>Plugin: Update(msg)
+    Plugin-->>Model: Updated Plugin state and/or Command
+    Model->>BubbleTea: Return update command
+
+    User->>BubbleTea: Press ESC (exit plugin)
+    BubbleTea->>Model: Sends ESC input
+    Model->>Plugin: Update(msg: ESC)
+    Plugin-->>Model: Return GoBackMsg
+    Model->>Model: Switch back to menu mode
+    Model->>Layout: Render updated layout
+    Layout->>Header: Call DefaultHeader(width, height)
+    Layout->>Sidebar: Call DefaultSidebar(width, height, activeIndex, menuItems)
+    Layout->>Content: Call DefaultContent(width, height, activeIndex, content)
+    Layout->>Footer: Call DefaultFooter(width, mode, textInput, suggestions)
+    Layout-->>Model: Rendered Layout
+    Model-->>BubbleTea: Rendered Output
+    BubbleTea->>User: Updated CLI View
+  :::
