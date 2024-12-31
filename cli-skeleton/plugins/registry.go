@@ -1,12 +1,12 @@
-// Frontend plugin interfaces
 package plugins
 
 import (
 	"cli-skeleton/pkg/core"
+	"cli-skeleton/plugins/secrets"
 	"cli-skeleton/plugins/terragrunt"
 )
 
-var Registry = map[string]core.Plugin{
-	"terragrunt": &terragrunt.TerragruntPlugin{},
-	// more plugins...
+func RegisterPlugins() {
+	core.RegisterPlugin(secrets.NewSecretsPlugin())
+	core.RegisterPlugin(terragrunt.NewTerragruntPlungin())
 }
