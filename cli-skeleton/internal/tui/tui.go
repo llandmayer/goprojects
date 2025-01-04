@@ -2,6 +2,9 @@ package tui
 
 import (
 	"cli-skeleton/pkg/core"
+	"cli-skeleton/pkg/skeleton"
+	"cli-skeleton/plugins"
+	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -9,13 +12,20 @@ import (
 func Run() error {
 	state := core.NewAppState()
 
-	models := core.RegisterAllFrontendPlugins(state)
+	log.Println("Registering frontend plugins...")
+	plugins.RegisterFrontendPlugin()
 
-	if len(models) == 0 {
-		return nil
-	}
+	pluginNames := core.ListFrontendPluginNames()
 
-	program := tea.NewProgram(models[0], tea.WithAltScreen())
+	baseModel := skeleton.NewModel(
+		state,
+		skeleton.DefaultLayout{},
+		pluginNames,
+		"Welcome to CLI Skeleton!",
+	)
+
+	// Start the TUI
+	program := tea.NewProgram(baseModel, tea.WithAltScreen())
 	_, err := program.Run()
 	return err
 }

@@ -37,6 +37,7 @@ func main() {
 func testFrontend() {
 	fmt.Println("Launching TUI...")
 	state := core.NewAppState()
+	core.RegisterFrontendPlugin(secrets.NewSecretsFrontendPlugin())
 
 	plugin, exists := core.GetFrontendPlugin("secrets")
 	if !exists {
