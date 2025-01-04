@@ -1,7 +1,9 @@
 package secrets
 
+import "cli-skeleton/plugins/secrets/models"
+
 type SecretsAPI interface {
-	ListSecrets() ([]string, error)
+	ListSecrets() ([]models.Component, error)
 	AddSecret(key, value string) error
 }
 
@@ -15,7 +17,7 @@ func NewSecretsAPI(handler *SecretsHandler) SecretsAPI {
 	}
 }
 
-func (api *secretsAPIImpl) ListSecrets() ([]string, error) {
+func (api *secretsAPIImpl) ListSecrets() ([]models.Component, error) {
 	return api.handler.ListSecrets()
 }
 

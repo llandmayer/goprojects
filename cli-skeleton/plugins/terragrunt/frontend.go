@@ -44,10 +44,11 @@ func (m *TerragruntModel) View() string {
 		Height(m.height).
 		Padding(1).
 		Border(lipgloss.RoundedBorder())
-	content := "Secrets:\n     																							"
+	content := "Secrets:\n"
 	for _, secret := range m.data {
 		content += fmt.Sprintf("- %s\n", secret)
 	}
+	content = lipgloss.NewStyle().Width(m.width - 4).Render(content) // Adjust content width
 	return style.Render(content + "\nPress 'q' to quit.")
 }
 
