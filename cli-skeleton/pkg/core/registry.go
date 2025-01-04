@@ -1,7 +1,6 @@
 package core
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
@@ -37,10 +36,10 @@ func GetFrontendPlugin(name string) (FrontendPlugin, bool) {
 	return plugin, exists
 }
 
-func RegisterAllFrontendPlugins(state *AppState) []tea.Model {
-	var models []tea.Model
-	for _, plugin := range frontendRegistry {
-		models = append(models, plugin.InitTUI(state))
+func ListFrontendPluginNames() []string {
+	var names []string
+	for name := range frontendRegistry {
+		names = append(names, name)
 	}
-	return models
+	return names
 }
